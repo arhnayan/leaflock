@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leaflock"
+version = "0.1.0"
+description = "Machine-bound .env encryption library"
+requires-python = ">=3.9"
+dependencies = [
+    "cryptography>=42.0.0",
+    "argon2-cffi>=23.1.0",
+    "click>=8.1.0",
+]
+
+[project.scripts]
+leaflock = "leaflock.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
