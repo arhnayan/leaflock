@@ -1,23 +1,21 @@
-from argon2 import PasswordHasher, Type
-from argon2.exceptions import VerifyMismatchError
-
-
-ph = PasswordHasher(
-    time_cost=3,
-    memory_cost=65536,
-    parallelism=4,
-    hash_len=32,
-    type=Type.ID,
-)
+import hashlib
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 def derive_key(passphrase: str, salt: bytes) -> bytes:
-    return ph.hash(passphrase + salt.hex()).encode()
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=480000,
+    )
+    return kdf.derive(passphrase.encode())
 
 
 def verify_key(passphrase: str, salt: bytes, key: bytes) -> bool:
     try:
         computed = derive_key(passphrase, salt)
         return computed == key
-    except (VerifyMismatchError, Exception):
+    except Exception:
         return False
