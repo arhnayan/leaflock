@@ -7,7 +7,9 @@ Encrypt your `.env` files so they only work on the machine that created them. Ev
 ## Installation
 
 ```bash
-pip install leaflock
+git clone https://github.com/arhnayan/leaflock.git
+cd leaflock
+pip install -e .
 ```
 
 ## Quick Start
