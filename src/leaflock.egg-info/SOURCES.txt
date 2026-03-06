@@ -1,6 +1,13 @@
 pyproject.toml
 src/leaflock/__init__.py
 src/leaflock/__main__.py
+src/leaflock/cli.py
+src/leaflock/crypto.py
+src/leaflock/env_file.py
+src/leaflock/exceptions.py
+src/leaflock/kdf.py
+src/leaflock/keyfile.py
+src/leaflock/machine_id.py
 src/leaflock.egg-info/PKG-INFO
 src/leaflock.egg-info/SOURCES.txt
 src/leaflock.egg-info/dependency_links.txt
