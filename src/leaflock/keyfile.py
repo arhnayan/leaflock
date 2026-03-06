@@ -102,8 +102,6 @@ def decrypt_keyfile(path: str, passphrase: str) -> bytes:
 
 
 def add_machine_to_keyfile(path: str, new_machine_id: str, passphrase: str) -> None:
-    key = decrypt_keyfile(path, passphrase)
-    
     with open(path, "rb") as f:
         data = f.read()
     
@@ -115,21 +113,30 @@ def add_machine_to_keyfile(path: str, new_machine_id: str, passphrase: str) -> N
     if new_machine_id in machine_ids:
         return
     
+    derived_key = kdf.derive_key(passphrase, salt)
+    
+    try:
+        master_key = crypto.decrypt(encrypted_master_key, derived_key)
+    except Exception as e:
+        raise InvalidPassphraseError("Invalid passphrase") from e
+    
+    current_machine_id = get_machine_id()
+    if current_machine_id not in machine_ids:
+        raise WrongMachineError("This keyfile is not authorized for this machine")
+    
     machine_ids.append(new_machine_id)
     
-    new_encrypted = crypto.encrypt(key, key)
+    new_encrypted = crypto.encrypt(master_key, derived_key)
     nonce = os.urandom(12)
     new_keyfile_data = _pack_keyfile(machine_ids, new_encrypted, nonce)
     new_data = salt + new_keyfile_data
     
-    os.chmod(path, 0o600)
     with open(path, "wb") as f:
         f.write(new_data)
+    os.chmod(path, 0o600)
 
 
 def remove_machine_from_keyfile(path: str, machine_id_to_remove: str, passphrase: str) -> None:
-    key = decrypt_keyfile(path, passphrase)
-    
     with open(path, "rb") as f:
         data = f.read()
     
@@ -141,13 +148,24 @@ def remove_machine_from_keyfile(path: str, machine_id_to_remove: str, passphrase
     if machine_id_to_remove not in machine_ids:
         return
     
+    derived_key = kdf.derive_key(passphrase, salt)
+    
+    try:
+        master_key = crypto.decrypt(encrypted_master_key, derived_key)
+    except Exception as e:
+        raise InvalidPassphraseError("Invalid passphrase") from e
+    
+    current_machine_id = get_machine_id()
+    if current_machine_id not in machine_ids:
+        raise WrongMachineError("This keyfile is not authorized for this machine")
+    
     machine_ids = [m for m in machine_ids if m != machine_id_to_remove]
     
-    new_encrypted = crypto.encrypt(key, key)
+    new_encrypted = crypto.encrypt(master_key, derived_key)
     nonce = os.urandom(12)
     new_keyfile_data = _pack_keyfile(machine_ids, new_encrypted, nonce)
     new_data = salt + new_keyfile_data
     
-    os.chmod(path, 0o600)
     with open(path, "wb") as f:
         f.write(new_data)
+    os.chmod(path, 0o600)

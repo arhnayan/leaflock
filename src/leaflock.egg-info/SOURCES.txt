@@ -1,3 +1,5 @@
+LICENSE
+README.md
 pyproject.toml
 src/leaflock/__init__.py
 src/leaflock/__main__.py
